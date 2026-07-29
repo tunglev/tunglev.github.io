@@ -1,10 +1,10 @@
 ---
 id: peony-garden
-title: "Augmented Reality Peony Garden"
-description: "Innovation Challenge 2024 Winner. Awarded $21,000 in equity-free funding for an AR peony garden experience."
+title: "Augmented reality botany (plant science) AI"
+description: "Innovation Challenge 2024 Winner. Classify 150 plant species by fine-tuning a MobileNetV3-Large network in PyTorch. Run inference model in realtime on mobile phone."
 date: "2024"
 readTime: "1 min read"
-tags: ["AR", "Innovation", "Funding", "Award"]
+tags: ["data", "fine-tuning", "AR", "mobile", "machine learning"]
 thumbnailBg: "#2d1b69"
 thumbnailType: "code"
 imageCaption: "AR Peony Garden"

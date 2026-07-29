@@ -14,6 +14,15 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
   const { metadata, content } = post;
   const footerSnippet = getSnippet('footer-note.md');
 
+  const hasImage = !!(
+    metadata.thumbnailImage ||
+    (metadata.thumbnailType &&
+      (metadata.thumbnailType.includes('/') ||
+        metadata.thumbnailType.includes('.') ||
+        metadata.thumbnailType.startsWith('http') ||
+        metadata.thumbnailType.startsWith('data:')))
+  );
+
   return (
     <div className="w-full max-w-2xl mx-auto px-1 py-2 flex flex-col items-center">
       {/* Centered Column Container with Left-Anchored Content */}
@@ -47,12 +56,12 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
         <div className="w-full mb-[clamp(20px,3.5vw,36px)] rounded-[clamp(12px,2vw,18px)] overflow-hidden border border-[#e2dfd7] bg-[#f5f2ea] shadow-xs flex flex-col items-center">
           <div
             className={`w-full h-[clamp(140px,28vw,260px)] flex items-center justify-center relative overflow-hidden ${
-              metadata.thumbnailImage ? 'p-0' : 'p-6'
+              hasImage ? 'p-0' : 'p-6'
             }`}
-            style={{ backgroundColor: metadata.thumbnailBg }}
+            style={hasImage ? undefined : { backgroundColor: metadata.thumbnailBg }}
           >
             <div className={`w-full h-full flex items-center justify-center ${
-              metadata.thumbnailImage ? '' : 'transform scale-110 transition-transform hover:scale-115'
+              hasImage ? '' : 'transform scale-110 transition-transform hover:scale-115'
             }`}>
               <ThumbnailRenderer type={metadata.thumbnailType} image={metadata.thumbnailImage} />
             </div>

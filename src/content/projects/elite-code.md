@@ -1,10 +1,10 @@
 ---
 id: elite-code
-title: "Elite Code"
-description: "A gamified microlearning platform for technical interview preparation. Learn faster, retain better, and have fun doing it."
+title: "Learn-coding platform infrastructure"
+description: "Full infrastructure for microlearning platform for technical interview preparation with LLM capability on mobile/web."
 date: "2024"
 readTime: "2 min read"
-tags: ["EdTech", "Web App", "UI/UX", "Interview Prep"]
+tags: ["mobile", "cloud infrastructure", "LLM"]
 thumbnailBg: "#1a1a2e"
 thumbnailType: "code"
 imageCaption: "Elite Code Platform"

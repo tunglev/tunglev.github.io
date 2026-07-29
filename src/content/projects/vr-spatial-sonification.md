@@ -1,14 +1,14 @@
 ---
 id: vr-spatial-sonification
-title: "VR Spatial Data Sonification Research"
-description: "Ongoing research investigating optimal audio encoding methods for spatial information to enhance environmental awareness through sound."
+title: "Spatial data sonification"
+description: "We propose a new way to convey information of your surrounding using only sounds."
 date: "Spring 2024 - Present"
 readTime: "5 min read"
-tags: ["VR", "Spatial Audio", "Research", "Assistive Technology"]
+tags: ["system design", "infrastructure", "AWS", "fullstack", "VR", "research"]
 thumbnailBg: "#0d1b2a"
 thumbnailType: "code"
 imageCaption: "System Architecture & Experimental Setup in VR"
-order: 2
+order: 3
 ---
 
 This is an ongoing research project I've been working on alongside Professor Philip S. Thomas, Professor Ravi Karkar, Professor VP Nguyen, Paul Davis, and Ryan Boldi at UMass. I contributed over 2,600 lines of C# code across 32 files.

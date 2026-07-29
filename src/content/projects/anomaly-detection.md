@@ -1,14 +1,14 @@
 ---
-id: airspace-forensics
-title: "Drone swarm tracking using AI and sensor fusion"
-description: "Classify drones in swarm using transfer learning. Localize using distributed system of LiDAR, IR, RF sensors."
-date: "Summer 2025"
+id: anomaly-detection
+title: "Anomaly detection model"
+description: "Flag abnormal network activity by combining different decision signals. An agentic conversational assistant to improve network interpretability with proprietary semantic understanding."
+date: "Winter 2026"
 readTime: "3 min read"
-tags: ["distributed system", "machine learning", "data", "embedded system"]
+tags: ["multimodal data", "machine learning", "clustering",  "agentic AI"]
 thumbnailBg: "#1a1a2e"
 thumbnailType: "./images/thumbnail.png"
 imageCaption: "Drone Swarm Tracking using AI and Sensor Fusion"
-order: 1
+order: 2
 ---
 
 I built this system during my time at Airspace Forensics, where I worked on analyzing and visualizing drone swarm behavior using LiDAR data. The goal was to enable real-time monitoring and threat assessment from aerial sensor data.

@@ -1,10 +1,10 @@
 ---
-id: ecs-engine
-title: "COMP4300 - ECS Game Engine"
-description: "Basic game engine built as a project after finishing the self-learned course COMP 4300 by Professor David Churchill."
+id: data-mining
+title: "Pattern discovery engine for backtesting"
+description: "Find hidden patterns from unexpected indicators and leverage that to get useful insights in time-series stock data sets."
 date: "2024"
 readTime: "3 min read"
-tags: ["C++", "Game Engine", "ECS", "Systems Programming"]
+tags: ["data", "simulation", "clustering", "feature extraction"]
 thumbnailBg: "#1b2838"
 thumbnailType: "code"
 imageCaption: "ECS Engine Architecture"
