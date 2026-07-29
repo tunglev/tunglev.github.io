@@ -1,0 +1,6 @@
+{
+  "name": "Duolingo Blog Article List",
+  "description": "Recreation of Duolingo blog article cards featuring German, French, and travel context clues articles.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
