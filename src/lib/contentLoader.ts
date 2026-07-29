@@ -49,8 +49,8 @@ export interface HomeContent {
   content: string;
 }
 
-// Vite glob import for all images in the workspace / src directory
-const imageModules = import.meta.glob('/src/**/*.{png,jpg,jpeg,svg,webp,gif,avif,PNG,JPG,JPEG,SVG,WEBP,GIF}', {
+// Vite glob import for all images and PDFs in the workspace / src directory
+const imageModules = import.meta.glob('/src/**/*.{png,jpg,jpeg,svg,webp,gif,avif,PNG,JPG,JPEG,SVG,WEBP,GIF,pdf,PDF}', {
   eager: true,
   import: 'default',
 }) as Record<string, string>;

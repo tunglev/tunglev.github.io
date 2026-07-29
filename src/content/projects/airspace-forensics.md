@@ -13,6 +13,12 @@ order: 1
 
 I built this system during my time at Airspace Forensics, where I worked on analyzing and visualizing drone swarm behavior using LiDAR data. The goal was to enable real-time monitoring and threat assessment from aerial sensor data.
 
+
+You can toggle and preview my **[Final Presentation (Screen captured)](/Net.pdf)** inline using the interactive link, or read the full embedded brief below:
+
+![Tung Le - Technical Resume & Systems Brief](/Net.pdf)
+
+
 ### What I Built
 
 - **Frontend 3D Visualization** — Rendered 20,000+ LiDAR point clouds in real-time using Open3D and Python, with color-coded intensity and classification data.

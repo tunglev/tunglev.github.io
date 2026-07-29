@@ -2,6 +2,8 @@ import React from 'react';
 import Markdown from 'react-markdown';
 import { ProjectPost, getSnippet, resolveAssetUrl } from '../lib/contentLoader';
 import { ThumbnailRenderer } from './ThumbnailRenderer';
+import { PdfEmbed } from './PdfEmbed';
+import { InteractivePdfLink } from './InteractivePdfLink';
 
 interface ProjectDetailViewProps {
   post: ProjectPost;
@@ -114,6 +116,10 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
               ),
               img: ({ src, alt }) => {
                 const resolvedSrc = src ? resolveAssetUrl(src) : '';
+                const isPdf = src && src.toLowerCase().endsWith('.pdf');
+                if (isPdf) {
+                  return <PdfEmbed src={resolvedSrc} title={alt || ''} />;
+                }
                 return (
                   <span className="block my-6 rounded-lg overflow-hidden border border-[#e2dfd7] shadow-xs">
                     <img
@@ -123,6 +129,23 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
                       referrerPolicy="no-referrer"
                     />
                   </span>
+                );
+              },
+              a: ({ href, children }) => {
+                const isPdf = href && href.toLowerCase().endsWith('.pdf');
+                if (isPdf) {
+                  const resolvedHref = href ? resolveAssetUrl(href) : '';
+                  return <InteractivePdfLink href={resolvedHref}>{children}</InteractivePdfLink>;
+                }
+                return (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#1DB954] hover:underline font-mono text-[clamp(12px,1.5vw,14px)] font-medium transition-colors"
+                  >
+                    {children}
+                  </a>
                 );
               },
             }}

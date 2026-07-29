@@ -1,10 +1,43 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Markdown from 'react-markdown';
+import { motion, AnimatePresence } from 'motion/react';
 import { getHomeContent, resolveAssetUrl } from '../lib/contentLoader';
+import { PdfEmbed } from './PdfEmbed';
+import { InteractivePdfLink } from './InteractivePdfLink';
+
+interface ClickParticle {
+  id: number;
+  x: number;
+  y: number;
+  char: string;
+  angle: number;
+  speed: number;
+}
 
 export function HomeView() {
   const homeData = useMemo(() => getHomeContent(), []);
   const { metadata, content } = homeData;
+
+  const [particles, setParticles] = useState<ClickParticle[]>([]);
+
+  const handleAvatarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    const chars = ['0', '1', '⚡', '💻', '⚙️', '🚀', '🟢', '[OK]', '[SYS]', '1DB954'];
+    
+    const newParticles = Array.from({ length: 6 }).map(() => ({
+      id: Math.random(),
+      x: clickX,
+      y: clickY,
+      char: chars[Math.floor(Math.random() * chars.length)],
+      angle: Math.random() * Math.PI * 2,
+      speed: 2 + Math.random() * 4,
+    }));
+
+    setParticles(prev => [...prev, ...newParticles].slice(-24));
+  };
 
   return (
     <div className="w-full max-w-3xl mx-auto py-4 px-2 flex flex-col items-start text-left">
@@ -12,7 +45,13 @@ export function HomeView() {
       {metadata.name && (
         <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-5 w-full">
           {metadata.avatar && (
-            <div className="shrink-0 relative group">
+            <motion.div 
+              className="shrink-0 relative group cursor-pointer select-none active:scale-95"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.94, rotate: Math.random() > 0.5 ? 4 : -4 }}
+              onClick={handleAvatarClick}
+              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+            >
               <img
                 src={metadata.avatar}
                 alt={metadata.name}
@@ -20,7 +59,31 @@ export function HomeView() {
                 referrerPolicy="no-referrer"
               />
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white" title="Active" />
-            </div>
+              
+              {/* Particle Overlay */}
+              <AnimatePresence>
+                {particles.map((p) => (
+                  <motion.span
+                    key={p.id}
+                    initial={{ opacity: 1, scale: 0.8, x: p.x, y: p.y }}
+                    animate={{ 
+                      opacity: 0, 
+                      scale: 1.3,
+                      x: p.x + Math.cos(p.angle) * p.speed * 18,
+                      y: p.y + Math.sin(p.angle) * p.speed * 18 - 30,
+                    }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    onAnimationComplete={() => {
+                      setParticles(prev => prev.filter(item => item.id !== p.id));
+                    }}
+                    className="absolute font-mono text-[#1DB954] text-xs font-bold pointer-events-none z-20 select-none bg-white/10 backdrop-blur-3hs px-1 py-0.5 rounded-xs"
+                  >
+                    {p.char}
+                  </motion.span>
+                ))}
+              </AnimatePresence>
+            </motion.div>
           )}
           <div className="flex flex-col items-start text-left">
             {metadata.role && (
@@ -95,6 +158,10 @@ export function HomeView() {
             ),
             img: ({ src, alt }) => {
               const resolvedSrc = src ? resolveAssetUrl(src) : '';
+              const isPdf = src && src.toLowerCase().endsWith('.pdf');
+              if (isPdf) {
+                return <PdfEmbed src={resolvedSrc} title={alt || ''} />;
+              }
               return (
                 <span className="block my-6 rounded-lg overflow-hidden border border-gray-200 shadow-xs">
                   <img
@@ -104,6 +171,23 @@ export function HomeView() {
                     referrerPolicy="no-referrer"
                   />
                 </span>
+              );
+            },
+            a: ({ href, children }) => {
+              const isPdf = href && href.toLowerCase().endsWith('.pdf');
+              if (isPdf) {
+                const resolvedHref = href ? resolveAssetUrl(href) : '';
+                return <InteractivePdfLink href={resolvedHref}>{children}</InteractivePdfLink>;
+              }
+              return (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#1DB954] hover:underline font-mono text-[clamp(12px,1.5vw,14px)] font-medium transition-colors"
+                >
+                  {children}
+                </a>
               );
             },
           }}
