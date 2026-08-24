@@ -1,7 +1,7 @@
 ---
 id: vr-spatial-sonification
 title: "Spatial data sonification"
-description: "We propose a new way to convey information of your surrounding using only sounds."
+description: "We propose a new way to convey information of your surrounding using only sounds and haptics (no visual)."
 date: "Spring 2024 - Present"
 readTime: "5 min read"
 tags: ["system design", "infrastructure", "AWS", "fullstack", "VR", "research"]
