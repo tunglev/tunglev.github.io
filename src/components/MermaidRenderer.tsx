@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import mermaid from 'mermaid';
-import { ZoomIn, ZoomOut, Maximize2, Move, AlertCircle } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, Minimize2, Move, AlertCircle } from 'lucide-react';
 
 // Initialize Mermaid with a neutral clean style that matches our laboratory/paper aesthetic
 mermaid.initialize({
@@ -21,9 +22,10 @@ mermaid.initialize({
 
 interface MermaidRendererProps {
   chart: string;
+  defaultZoom?: number;
 }
 
-export function MermaidRenderer({ chart }: MermaidRendererProps) {
+export function MermaidRenderer({ chart, defaultZoom }: MermaidRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgWrapperRef = useRef<HTMLDivElement>(null);
   const touchStartDistRef = useRef<number>(0);
@@ -33,6 +35,7 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState<boolean>(true);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   // Pan & Zoom states
   const [scale, setScale] = useState<number>(1);
@@ -45,6 +48,35 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
 
   // Generate a unique ID for each mermaid diagram instance
   const uniqueIdRef = useRef<string>(`mermaid-${Math.random().toString(36).substr(2, 9)}`);
+
+  // Parse custom zoom if specified in the chart, e.g. "%% zoom: 1.8" or "%% scale: 1.8" or "%% defaultZoom: 1.8"
+  const matchZoom = chart.match(/%%\s*(?:zoom|scale|defaultZoom):\s*(\d+(?:\.\d+)?)/i);
+  const chartParsedZoom = matchZoom ? parseFloat(matchZoom[1]) : undefined;
+  const initialZoom = defaultZoom ?? chartParsedZoom ?? 1.5;
+
+  // Esc key to exit fullscreen
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen]);
+
+  // Lock body scroll when fullscreen is active
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isFullscreen]);
 
   // Render Mermaid code to SVG
   useEffect(() => {
@@ -134,8 +166,8 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
     const containerWidth = containerRef.current.clientWidth;
     const containerHeight = containerRef.current.clientHeight || 450;
 
-    // Default to exactly 1.5 (150% scaling) centered on the screen as requested
-    const fitScale = 1.5;
+    // Use customized initial zoom
+    const fitScale = initialZoom;
 
     // Center coordinates: translate relative to the container width/height minus scaled diagram dimension
     const x = (containerWidth - originalWidth * fitScale) / 2;
@@ -148,9 +180,12 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
     setPosition({ x, y });
   };
 
-  // Recenter when SVG changes or container resizes
+  // Recenter when SVG changes, container resizes, initialZoom changes, or isFullscreen changes
   useEffect(() => {
-    handleRecenter();
+    // A small timeout ensures the DOM layout has settled after fullscreen transitions
+    const timer = setTimeout(() => {
+      handleRecenter();
+    }, 50);
 
     const resizeObserver = new ResizeObserver(() => {
       handleRecenter();
@@ -161,9 +196,10 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
     }
 
     return () => {
+      clearTimeout(timer);
       resizeObserver.disconnect();
     };
-  }, [svg]);
+  }, [svg, initialZoom, isFullscreen]);
 
   // Bind passive-false native event listener to block page scrolling entirely during wheel zoom
   useEffect(() => {
@@ -204,7 +240,7 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
     return () => {
       container.removeEventListener('wheel', handleNativeWheel);
     };
-  }, [svg]);
+  }, [svg, isFullscreen]);
 
   // Click & Drag Panning
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -323,19 +359,102 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
     );
   }
 
+  if (isFullscreen) {
+    return createPortal(
+      <div className="fixed inset-0 z-[9999] bg-[#faf8f5] select-none flex flex-col w-screen h-screen">
+        {/* Info & Exit Bar */}
+        <div className="px-4 py-3 border-b border-[#e5e2da] bg-[#fbf9f5] flex items-center justify-end">
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono text-[#636870]/80">
+              <Move className="w-3.5 h-3.5" />
+              <span>Drag to pan, Scroll to zoom</span>
+            </div>
+            <span className="text-[10px] font-mono bg-[#f4f1e8] border border-[#e5e2da] px-1.5 py-0.5 rounded text-[#636870]">
+              ESC to exit
+            </span>
+          </div>
+        </div>
+
+        {/* Main Canvas Area */}
+        <div
+          ref={containerRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUpOrLeave}
+          onMouseLeave={handleMouseUpOrLeave}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onDoubleClick={handleRecenter}
+          className="w-full flex-1 h-full overflow-hidden relative cursor-grab active:cursor-grabbing bg-radial from-[#ffffff]/50 to-[#fbf9f5]/20 flex items-center justify-center transition-colors duration-150"
+        >
+          {isRendering ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#faf8f5]/80 z-20 gap-3">
+              <div className="w-6 h-6 border-2 border-[#1DB954]/20 border-t-[#1DB954] rounded-full animate-spin" />
+              <span className="text-xs font-mono text-[#636870] tracking-wide animate-pulse">Assembling nodes...</span>
+            </div>
+          ) : null}
+
+          {/* Zoomed/Panned SVG Canvas */}
+          <div
+            ref={svgWrapperRef}
+            style={{
+              transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+              transformOrigin: '0 0',
+            }}
+            className="absolute top-0 left-0 transition-transform duration-75 ease-out select-none"
+            dangerouslySetInnerHTML={{ __html: svg }}
+          />
+
+          {/* Controls Overlay */}
+          <div className="absolute bottom-4 right-4 flex items-center gap-1.5 bg-[#ffffff]/95 backdrop-blur-xs px-2 py-1.5 rounded-lg border border-[#e5e2da] shadow-sm z-10 transition-opacity duration-200">
+            {/* Zoom Out */}
+            <button
+              onClick={() => triggerZoom(false)}
+              title="Zoom Out"
+              className="p-1.5 hover:bg-[#f4f1e8] text-[#4a4f56] hover:text-[#1DB954] rounded-md transition-all active:scale-95 cursor-pointer focus:outline-none"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+
+            {/* Zoom In */}
+            <button
+              onClick={() => triggerZoom(true)}
+              title="Zoom In"
+              className="p-1.5 hover:bg-[#f4f1e8] text-[#4a4f56] hover:text-[#1DB954] rounded-md transition-all active:scale-95 cursor-pointer focus:outline-none"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
+
+            {/* Full Screen Toggle */}
+            <button
+              onClick={() => setIsFullscreen(false)}
+              title="Exit Full Screen"
+              className="p-1.5 hover:bg-[#f4f1e8] text-[#4a4f56] hover:text-[#1DB954] rounded-md transition-all active:scale-95 cursor-pointer focus:outline-none border-l border-[#e5e2da] pl-2"
+            >
+              <Minimize2 className="w-4 h-4" />
+            </button>
+
+            {/* Scale Badge */}
+            <div className="border-l border-[#e5e2da] pl-2 ml-1 text-[10px] font-mono font-medium text-[#636870]">
+              {Math.round(scale * 100)}%
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
   return (
     <div className="w-full my-8 border border-[#e5e2da] rounded-2xl overflow-hidden bg-[#faf8f5] shadow-sm select-none relative group/canvas flex flex-col">
-      {/* Title / Description Bar */}
-      <div className="px-4 py-3 border-b border-[#e5e2da] bg-[#fbf9f5] flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#1DB954]" />
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#636870]">
-            Interactive Flowchart
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#636870]/80">
-          <Move className="w-3.5 h-3.5" />
-          <span>Drag to pan, Scroll to zoom</span>
+      {/* Info Bar */}
+      <div className="px-4 py-3 border-b border-[#e5e2da] bg-[#fbf9f5] flex items-center justify-end">
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono text-[#636870]/80">
+            <Move className="w-3.5 h-3.5" />
+            <span>Drag to pan, Scroll to zoom</span>
+          </div>
         </div>
       </div>
 
@@ -350,7 +469,7 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onDoubleClick={handleRecenter}
-        className={`w-full h-[380px] md:h-[450px] overflow-hidden relative cursor-grab active:cursor-grabbing bg-radial from-[#ffffff]/50 to-[#fbf9f5]/20 flex items-center justify-center transition-colors duration-150`}
+        className="w-full h-[380px] md:h-[450px] overflow-hidden relative cursor-grab active:cursor-grabbing bg-radial from-[#ffffff]/50 to-[#fbf9f5]/20 flex items-center justify-center transition-colors duration-150"
       >
         {isRendering ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#faf8f5]/80 z-20 gap-3">
@@ -381,16 +500,6 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
             <ZoomOut className="w-4 h-4" />
           </button>
 
-          {/* Reset / Center */}
-          <button
-            onClick={handleRecenter}
-            title="Recenter & Fit"
-            className="p-1.5 hover:bg-[#f4f1e8] text-[#4a4f56] hover:text-[#1DB954] rounded-md transition-all active:scale-95 cursor-pointer focus:outline-none flex items-center gap-1"
-          >
-            <Maximize2 className="w-4 h-4" />
-            <span className="text-[10px] font-mono font-bold leading-none">FIT</span>
-          </button>
-
           {/* Zoom In */}
           <button
             onClick={() => triggerZoom(true)}
@@ -398,6 +507,15 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
             className="p-1.5 hover:bg-[#f4f1e8] text-[#4a4f56] hover:text-[#1DB954] rounded-md transition-all active:scale-95 cursor-pointer focus:outline-none"
           >
             <ZoomIn className="w-4 h-4" />
+          </button>
+
+          {/* Full Screen Toggle */}
+          <button
+            onClick={() => setIsFullscreen(true)}
+            title="Full Screen View"
+            className="p-1.5 hover:bg-[#f4f1e8] text-[#4a4f56] hover:text-[#1DB954] rounded-md transition-all active:scale-95 cursor-pointer focus:outline-none border-l border-[#e5e2da] pl-2"
+          >
+            <Maximize2 className="w-4 h-4" />
           </button>
 
           {/* Scale Badge */}

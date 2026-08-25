@@ -14,6 +14,7 @@ import { ProjectsView } from './components/ProjectsView';
 import { ExperienceView } from './components/ExperienceView';
 import { ContactView } from './components/ContactView';
 import { BinaryBackground } from './components/BinaryBackground';
+import { MobileWarningOverlay } from './components/MobileWarningOverlay';
 import { useRouter } from './lib/router';
 
 export default function App() {
@@ -67,6 +68,9 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-[#faf8f5] text-[#383b3e] flex flex-col justify-between items-center w-full max-w-full">
+      {/* Mobile Desktop Warning Overlay */}
+      <MobileWarningOverlay />
+
       {/* Dynamic Interactive Binary Canvas Background */}
       <BinaryBackground radius={130} baseOpacity={0.07} activeOpacity={0.4} />
 
