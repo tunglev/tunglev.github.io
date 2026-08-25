@@ -7,6 +7,7 @@ import { ProjectPost, getSnippet, resolveAssetUrl } from '../lib/contentLoader';
 import { ThumbnailRenderer } from './ThumbnailRenderer';
 import { PdfEmbed } from './PdfEmbed';
 import { InteractivePdfLink } from './InteractivePdfLink';
+import { MermaidRenderer } from './MermaidRenderer';
 
 interface ProjectDetailViewProps {
   post: ProjectPost;
@@ -301,11 +302,32 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
                   {children}
                 </blockquote>
               ),
-              code: ({ children }) => (
-                <code className="bg-[#eaf7ef] text-[#137535] font-mono text-sm px-1.5 py-0.5 rounded border border-[#b3e6c4]">
-                  {children}
-                </code>
-              ),
+              code: ({ className, children, ...props }) => {
+                const match = /language-(\w+)/.exec(className || '');
+                const isMermaid = match && match[1] === 'mermaid';
+                const codeContent = String(children).replace(/\n$/, '');
+
+                if (isMermaid) {
+                  return <MermaidRenderer chart={codeContent} />;
+                }
+
+                const isBlock = className || codeContent.includes('\n');
+                if (isBlock) {
+                  return (
+                    <pre className="bg-[#f4f1e8] border border-[#e2dfd7] rounded-xl p-4 overflow-x-auto my-6 text-xs md:text-sm font-mono text-[#282a2d] leading-relaxed no-scrollbar">
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    </pre>
+                  );
+                }
+
+                return (
+                  <code className="bg-[#eaf7ef] text-[#137535] font-mono text-xs md:text-sm px-1.5 py-0.5 rounded border border-[#b3e6c4]">
+                    {children}
+                  </code>
+                );
+              },
               table: ({ children }) => (
                 <div className="w-full overflow-x-auto my-6 border border-[#e2dfd7] rounded-lg bg-[#fdfcf9] shadow-xs">
                   <table className="w-full border-collapse text-left text-sm font-mono text-[#383b3e]">
