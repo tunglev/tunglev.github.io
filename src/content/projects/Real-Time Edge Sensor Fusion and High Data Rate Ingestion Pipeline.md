@@ -2,8 +2,8 @@
 id: rtos-firmware
 title: "RealTime multi-processor SOC ingestion pipeline and batching algorithm"
 description: "RTOS for deterministic temporal data fusion. SIMD for high throughput spatial fusion."
-date: "Summer 2025"
-readTime: "3 min read"
+date: ""
+readTime: ""
 tags: ["RTOS", "embedded system", "firmware", "SoC", "algorithm"]
 thumbnailBg: "#1a1a2e"
 thumbnailType: "./images/thumbnail.png"

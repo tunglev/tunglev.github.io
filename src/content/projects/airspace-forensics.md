@@ -2,8 +2,8 @@
 id: airspace-forensics
 title: "Drone swarm tracking using AI and sensor fusion"
 description: "Classify drones in swarm using transfer learning. Localize using distributed system of LiDAR, IR, RF sensors."
-date: "Summer 2025"
-readTime: "3 min read"
+date: ""
+readTime: ""
 tags: ["distributed system", "machine learning", "data", "embedded system"]
 thumbnailBg: "#1a1a2e"
 thumbnailType: "./images/a.png"
@@ -30,9 +30,11 @@ Python, Open3D, DBSCAN, PointNet, Kalman Filters, gRPC, Protobuf, Go, React, AWS
 
 ### Impact
 
-The system was designed to process 50,000 requests per second through the sensor pipeline, with gRPC latency halved through optimization. It provided real-time situational awareness for drone monitoring applications.
+The system was designed to process 50,000 requests per second through the sensor pipeline, with gRPC latency halved through optimization. It provided real-time situational awareness for drone monitoring applications. This is the real-time processing and tracking ID and different drones in a swarm. 
 
 ![Swarm Tracking](/src/assets/videos/clustering-n-tracking.mp4)
+ 
+ My suggestion to the team the techniques to calibrate multiple lighters in an environment such that there is not much similarity and overlap in information. (YouTube video below)
 
 ![Technique to Calibrate Multiple LiDAR in different scenarios using point cloud information](https://www.youtube.com/watch?v=i1zHdpEo8TE)
 

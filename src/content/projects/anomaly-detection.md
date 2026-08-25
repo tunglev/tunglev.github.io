@@ -2,8 +2,8 @@
 id: anomaly-detection
 title: "Anomaly detection model"
 description: "Flag abnormal network activity by combining different decision signals. An agentic conversational assistant to improve network interpretability with proprietary semantic understanding."
-date: "Winter 2026"
-readTime: "3 min read"
+date: ""
+readTime: ""
 tags: ["multimodal data", "machine learning", "clustering",  "agentic AI"]
 thumbnailBg: "#1a1a2e"
 thumbnailType: "microsoft.png"
