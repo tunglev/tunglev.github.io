@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { ProjectPost, getSnippet, resolveAssetUrl } from '../lib/contentLoader';
 import { ThumbnailRenderer } from './ThumbnailRenderer';
 import { PdfEmbed } from './PdfEmbed';
@@ -8,6 +11,16 @@ import { InteractivePdfLink } from './InteractivePdfLink';
 interface ProjectDetailViewProps {
   post: ProjectPost;
   onBack: () => void;
+}
+
+// Extract pure text from React children to generate heading IDs
+function getTextFromNode(node: any): string {
+  if (!node) return '';
+  if (typeof node === 'string') return node;
+  if (typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(getTextFromNode).join('');
+  if (node.props && node.props.children) return getTextFromNode(node.props.children);
+  return '';
 }
 
 export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
@@ -23,10 +36,102 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
         metadata.thumbnailType.startsWith('data:')))
   );
 
+  // Parse headings (H2 and H3) for the Table of Contents scroll spy
+  const headings = useMemo(() => {
+    const headingRegex = /^(##|###)\s+(.+)$/gm;
+    const found: { id: string; text: string; level: number }[] = [];
+    let match;
+    headingRegex.lastIndex = 0;
+    while ((match = headingRegex.exec(content)) !== null) {
+      const level = match[1].length; // 2 for H2, 3 for H3
+      const text = match[2].trim();
+      const id = text
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-');
+      found.push({ id, text, level });
+    }
+    return found;
+  }, [content]);
+
+  // Scrollspy to highlight active headers on the left
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (headings.length === 0) return;
+
+    const handleScroll = () => {
+      let currentActiveId: string | null = null;
+      let minDistance = Infinity;
+      const targetY = 120; // threshold from top of viewport
+
+      headings.forEach((heading) => {
+        const el = document.getElementById(heading.id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          // Distance from the target line
+          const dist = rect.top - targetY;
+          if (rect.top <= targetY + 50) {
+            if (Math.abs(dist) < minDistance) {
+              minDistance = Math.abs(dist);
+              currentActiveId = heading.id;
+            }
+          }
+        }
+      });
+
+      if (!currentActiveId && headings.length > 0) {
+        currentActiveId = headings[0].id;
+      }
+
+      setActiveId(currentActiveId);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [headings]);
+
   return (
-    <div className="w-full max-w-2xl mx-auto px-1 py-2 flex flex-col items-center">
+    <div className="w-full max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-8 items-start">
+      
+      {/* Sidebar Sticky Column on Left (visible on lg screens and up) */}
+      {headings.length > 0 && (
+        <aside className="hidden lg:block w-60 shrink-0 sticky top-28 self-start bg-[#fbf9f5]/90 backdrop-blur-xs p-5 rounded-2xl border border-[#e5e2da] shadow-xs select-none max-h-[calc(100vh-8rem)] overflow-y-auto no-scrollbar">
+          <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#636870] mb-3">
+            On This Page
+          </h4>
+          <nav className="space-y-2">
+            {headings.map((heading) => {
+              const isActive = activeId === heading.id;
+              return (
+                <a
+                  key={heading.id}
+                  href={`#${heading.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.getElementById(heading.id);
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className={`block text-[12px] font-mono transition-all duration-200 border-l-2 pl-3 ${
+                    isActive
+                      ? 'border-[#1DB954] text-[#1DB954] font-bold translate-x-0.5'
+                      : 'border-transparent text-[#636870] hover:text-[#282a2d] hover:border-[#e2dfd7]'
+                  } ${heading.level === 3 ? 'ml-3 text-[11px] font-normal' : ''}`}
+                >
+                  {heading.text}
+                </a>
+              );
+            })}
+          </nav>
+        </aside>
+      )}
+
       {/* Centered Column Container with Left-Anchored Content */}
-      <article className="w-full text-left font-sans text-[#383b3e] bg-[#fbf9f5]/90 backdrop-blur-xs p-[clamp(16px,3vw,32px)] rounded-[clamp(16px,2.5vw,28px)] border border-[#e5e2da] shadow-xs">
+      <article className="flex-1 min-w-0 text-left font-sans text-[#383b3e] bg-[#fbf9f5]/90 backdrop-blur-xs p-[clamp(16px,3vw,32px)] rounded-[clamp(16px,2.5vw,28px)] border border-[#e5e2da] shadow-xs w-full">
         {/* Top Back Button */}
         <a
           href="/project"
@@ -78,22 +183,45 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
         {/* Article Body - Rendered from Markdown Content File */}
         <div className="markdown-body text-[clamp(14px,1.8vw,17px)] text-[#383b3e] leading-[1.75] font-normal mb-[clamp(24px,3.5vw,40px)]">
           <Markdown
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex]}
             components={{
-              h1: ({ children }) => (
-                <h1 className="text-[clamp(20px,3vw,30px)] font-extrabold text-[#282a2d] tracking-tight mt-8 mb-4">
-                  {children}
-                </h1>
-              ),
-              h2: ({ children }) => (
-                <h2 className="text-[clamp(18px,2.5vw,24px)] font-bold text-[#282a2d] tracking-tight mt-6 mb-3">
-                  {children}
-                </h2>
-              ),
-              h3: ({ children }) => (
-                <h3 className="text-[clamp(14px,1.8vw,18px)] font-bold text-[#282a2d] mt-8 mb-4 font-mono tracking-tight pt-4 border-t border-[#e2dfd7]">
-                  {children}
-                </h3>
-              ),
+              h1: ({ children }) => {
+                const text = getTextFromNode(children);
+                const id = text
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/\s+/g, '-');
+                return (
+                  <h1 id={id} className="text-[clamp(20px,3vw,30px)] font-extrabold text-[#282a2d] tracking-tight mt-8 mb-4 scroll-mt-28">
+                    {children}
+                  </h1>
+                );
+              },
+              h2: ({ children }) => {
+                const text = getTextFromNode(children);
+                const id = text
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/\s+/g, '-');
+                return (
+                  <h2 id={id} className="text-[clamp(18px,2.5vw,24px)] font-bold text-[#282a2d] tracking-tight mt-10 mb-4 scroll-mt-28 pt-2 border-b border-[#e2dfd7] pb-1">
+                    {children}
+                  </h2>
+                );
+              },
+              h3: ({ children }) => {
+                const text = getTextFromNode(children);
+                const id = text
+                  .toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/\s+/g, '-');
+                return (
+                  <h3 id={id} className="text-[clamp(14px,1.8vw,18px)] font-bold text-[#282a2d] mt-8 mb-3 font-mono tracking-tight pt-4 border-t border-[#e2dfd7] scroll-mt-28">
+                    {children}
+                  </h3>
+                );
+              },
               p: ({ children }) => (
                 <p className="mb-[clamp(14px,2.2vw,22px)] text-[#383b3e] leading-[1.75]">
                   {children}
@@ -123,12 +251,104 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
                   {children}
                 </code>
               ),
+              table: ({ children }) => (
+                <div className="w-full overflow-x-auto my-6 border border-[#e2dfd7] rounded-lg bg-[#fdfcf9] shadow-xs">
+                  <table className="w-full border-collapse text-left text-sm font-mono text-[#383b3e]">
+                    {children}
+                  </table>
+                </div>
+              ),
+              thead: ({ children }) => (
+                <thead className="bg-[#f4f1e8] border-b border-[#e2dfd7] font-bold text-[#282a2d]">
+                  {children}
+                </thead>
+              ),
+              tbody: ({ children }) => (
+                <tbody className="divide-y divide-[#e2dfd7]">
+                  {children}
+                </tbody>
+              ),
+              tr: ({ children }) => (
+                <tr className="hover:bg-[#fbf9f5]/50 transition-colors odd:bg-white even:bg-[#fcfbf9]">
+                  {children}
+                </tr>
+              ),
+              th: ({ children }) => (
+                <th className="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-[#282a2d] border-r border-[#e2dfd7] last:border-r-0">
+                  {children}
+                </th>
+              ),
+              td: ({ children }) => (
+                <td className="px-4 py-3 text-xs leading-relaxed text-[#5c6068] border-r border-[#e2dfd7] last:border-r-0">
+                  {children}
+                </td>
+              ),
               img: ({ src, alt }) => {
                 const resolvedSrc = src ? resolveAssetUrl(src) : '';
                 const isPdf = src && src.toLowerCase().endsWith('.pdf');
                 if (isPdf) {
                   return <PdfEmbed src={resolvedSrc} title={alt || ''} />;
                 }
+
+                // Video check
+                const isVideo = src && (
+                  src.toLowerCase().endsWith('.mp4') ||
+                  src.toLowerCase().endsWith('.webm') ||
+                  src.toLowerCase().endsWith('.ogg') ||
+                  src.includes('youtube.com') ||
+                  src.includes('youtu.be') ||
+                  src.includes('vimeo.com')
+                );
+
+                if (isVideo) {
+                  if (src.includes('youtube.com') || src.includes('youtu.be')) {
+                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                    const match = src.match(regExp);
+                    const videoId = (match && match[2].length === 11) ? match[2] : null;
+                    if (videoId) {
+                      return (
+                        <div className="aspect-video w-full rounded-lg overflow-hidden border border-[#e2dfd7] my-6 shadow-xs">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${videoId}`}
+                            title={alt || "YouTube video"}
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      );
+                    }
+                  }
+
+                  if (src.includes('vimeo.com')) {
+                    const match = src.match(/vimeo\.com\/(\d+)/);
+                    const vimeoId = match ? match[1] : null;
+                    if (vimeoId) {
+                      return (
+                        <div className="aspect-video w-full rounded-lg overflow-hidden border border-[#e2dfd7] my-6 shadow-xs">
+                          <iframe
+                            src={`https://player.vimeo.com/video/${vimeoId}`}
+                            title={alt || "Vimeo video"}
+                            className="w-full h-full border-0"
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      );
+                    }
+                  }
+
+                  return (
+                    <span className="block my-6 rounded-lg overflow-hidden border border-[#e2dfd7] shadow-xs bg-black">
+                      <video
+                        src={resolvedSrc}
+                        controls
+                        className="w-full h-auto max-h-[500px] mx-auto"
+                      />
+                    </span>
+                  );
+                }
+
                 return (
                   <span className="block my-6 rounded-lg overflow-hidden border border-[#e2dfd7] shadow-xs">
                     <img
@@ -146,6 +366,67 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
                   const resolvedHref = href ? resolveAssetUrl(href) : '';
                   return <InteractivePdfLink href={resolvedHref}>{children}</InteractivePdfLink>;
                 }
+
+                // Video check
+                const isVideo = href && (
+                  href.toLowerCase().endsWith('.mp4') ||
+                  href.toLowerCase().endsWith('.webm') ||
+                  href.toLowerCase().endsWith('.ogg') ||
+                  href.includes('youtube.com/watch') ||
+                  href.includes('youtu.be/') ||
+                  href.includes('vimeo.com/')
+                );
+
+                if (isVideo) {
+                  if (href.includes('youtube.com') || href.includes('youtu.be')) {
+                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                    const match = href.match(regExp);
+                    const videoId = (match && match[2].length === 11) ? match[2] : null;
+                    if (videoId) {
+                      return (
+                        <div className="aspect-video w-full rounded-lg overflow-hidden border border-[#e2dfd7] my-4 shadow-xs">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${videoId}`}
+                            title="YouTube video player"
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      );
+                    }
+                  }
+
+                  if (href.includes('vimeo.com')) {
+                    const match = href.match(/vimeo\.com\/(\d+)/);
+                    const vimeoId = match ? match[1] : null;
+                    if (vimeoId) {
+                      return (
+                        <div className="aspect-video w-full rounded-lg overflow-hidden border border-[#e2dfd7] my-4 shadow-xs">
+                          <iframe
+                            src={`https://player.vimeo.com/video/${vimeoId}`}
+                            title="Vimeo video player"
+                            className="w-full h-full border-0"
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      );
+                    }
+                  }
+
+                  const resolvedHref = href ? resolveAssetUrl(href) : '';
+                  return (
+                    <span className="block my-4 rounded-lg overflow-hidden border border-[#e2dfd7] shadow-xs bg-black">
+                      <video
+                        src={resolvedHref}
+                        controls
+                        className="w-full h-auto max-h-[400px] mx-auto"
+                      />
+                    </span>
+                  );
+                }
+
                 return (
                   <a
                     href={href}

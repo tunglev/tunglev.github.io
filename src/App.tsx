@@ -78,7 +78,7 @@ export default function App() {
       />
 
       {/* Main Content View with Page Transition Animations */}
-      <main className="relative z-10 flex-1 w-full max-w-4xl mx-auto px-[clamp(16px,4vw,32px)] py-[clamp(24px,5vw,64px)] flex flex-col justify-center items-center overflow-x-hidden">
+      <main className="relative z-10 flex-1 w-full max-w-5xl mx-auto px-[clamp(16px,4vw,32px)] py-[clamp(24px,5vw,64px)] flex flex-col justify-center items-center">
         <TypewriterTransition viewKey={viewKey} tabName={selectedProjectId ? `${activeTab}/${selectedProjectId}` : activeTab}>
           {activeTab === 'project' && (
             <ProjectsView

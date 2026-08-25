@@ -77,7 +77,7 @@ export function TypewriterTransition({ children, viewKey, tabName }: TypewriterT
               },
             },
           }}
-          className="w-full flex flex-col items-center justify-center relative overflow-hidden"
+          className="w-full flex flex-col items-center justify-center relative"
         >
           {children}
         </motion.div>
