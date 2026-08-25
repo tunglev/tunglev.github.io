@@ -163,11 +163,11 @@ export function HomeView() {
                 return <PdfEmbed src={resolvedSrc} title={alt || ''} />;
               }
               return (
-                <span className="block my-6 rounded-lg overflow-hidden border border-gray-200 shadow-xs">
+                <span className="block w-full my-6 rounded-lg overflow-hidden border border-[#e2dfd7] shadow-xs bg-[#f8f6f0]">
                   <img
                     src={resolvedSrc}
                     alt={alt || ''}
-                    className="w-full h-auto object-cover max-h-[500px]"
+                    className="w-full h-auto block"
                     referrerPolicy="no-referrer"
                   />
                 </span>

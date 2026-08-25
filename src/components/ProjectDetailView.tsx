@@ -181,15 +181,19 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
         {/* Image Card / Banner in Article */}
         <div className="w-full mb-[clamp(20px,3.5vw,36px)] rounded-[clamp(12px,2vw,18px)] overflow-hidden border border-[#e2dfd7] bg-[#f5f2ea] shadow-xs flex flex-col items-center">
           <div
-            className={`w-full h-[clamp(140px,28vw,260px)] flex items-center justify-center relative overflow-hidden ${
-              hasImage ? 'p-0' : 'p-6'
+            className={`w-full flex items-center justify-center relative overflow-hidden ${
+              hasImage ? 'p-0 h-auto' : 'h-[clamp(140px,28vw,260px)] p-6'
             }`}
             style={hasImage ? undefined : { backgroundColor: metadata.thumbnailBg }}
           >
-            <div className={`w-full h-full flex items-center justify-center ${
-              hasImage ? '' : 'transform scale-110 transition-transform hover:scale-115'
+            <div className={`w-full flex items-center justify-center ${
+              hasImage ? '' : 'w-full h-full transform scale-110 transition-transform hover:scale-115'
             }`}>
-              <ThumbnailRenderer type={metadata.thumbnailType} image={metadata.thumbnailImage} />
+              <ThumbnailRenderer
+                type={metadata.thumbnailType}
+                image={metadata.thumbnailImage}
+                className={hasImage ? 'w-full h-auto block' : undefined}
+              />
             </div>
           </div>
           {metadata.imageCaption && (
@@ -434,11 +438,11 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
                 }
 
                 return (
-                  <span className="block my-6 rounded-lg overflow-hidden border border-[#e2dfd7] shadow-xs">
+                  <span className="block w-full my-6 rounded-lg overflow-hidden border border-[#e2dfd7] shadow-xs bg-[#f8f6f0]">
                     <img
                       src={resolvedSrc}
                       alt={alt || ''}
-                      className="w-full h-auto object-cover max-h-[500px]"
+                      className="w-full h-auto block"
                       referrerPolicy="no-referrer"
                     />
                   </span>

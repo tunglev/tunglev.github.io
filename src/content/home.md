@@ -1,7 +1,7 @@
 ---
 name: "Tung Le"
 role: ""
-avatar: "../images/avatar.jpg"
+avatar: "../images/a.png"
 subtitle: "CS @ UMass Amherst · Distributed Systems, Machine Learning & Embedded Systems"
 location: ""
 ---

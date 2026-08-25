@@ -4,9 +4,10 @@ import { GermanFlag, FrenchFlag, DetectiveDuo } from './Illustrations';
 interface ThumbnailRendererProps {
   type?: string;
   image?: string;
+  className?: string;
 }
 
-export function ThumbnailRenderer({ type, image }: ThumbnailRendererProps) {
+export function ThumbnailRenderer({ type, image, className }: ThumbnailRendererProps) {
   const finalImageUrl =
     image ||
     (type &&
@@ -23,7 +24,7 @@ export function ThumbnailRenderer({ type, image }: ThumbnailRendererProps) {
         <img
           src={finalImageUrl}
           alt="Thumbnail"
-          className="w-full h-full object-cover"
+          className={className || "w-full h-full object-cover"}
           referrerPolicy="no-referrer"
         />
       </div>

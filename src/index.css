@@ -21,3 +21,12 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
+/* Ensure all images in markdown are fully shown and fit container width */
+.markdown-body img {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  display: block;
+}
+
+

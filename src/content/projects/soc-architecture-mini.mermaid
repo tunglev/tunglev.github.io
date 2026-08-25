@@ -1,0 +1,31 @@
+%% zoom: 0.68
+graph LR
+    %% Styling and color themes
+    classDef sensors fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef edge fill:#efebe9,stroke:#4e342e,stroke-width:2px;
+    classDef cloud fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+
+    %% 1. Physical Sensors Block
+    subgraph Sensors [1. Physical Sensors]
+        LIDAR["LiDAR Sensor <br/> (3D Point Cloud)"]:::sensors
+        CAM["Thermal Camera <br/> (2D Video Frame)"]:::sensors
+    end
+
+    %% 2. Zynq MPSoC Edge Processing Node
+    subgraph MPSoC [2. Zynq MPSoC Edge Processing Node]
+        RPU["RPU (Cortex-R5) <br/> Hard Real-Time Ingestion <br/> & Temporal Alignment"]:::edge
+        IPC["Shared Memory <br/> Zero-Copy OpenAMP / RPMsg"]:::edge
+        APU["APU (Cortex-A53) <br/> NEON Spatial Fusion <br/> & Go Adaptive Batching"]:::edge
+    end
+
+    %% 3. Cloud Infrastructure
+    subgraph Cloud [3. Cloud Infrastructure]
+        BACKEND["Central gRPC Backend <br/> Tracking & Analytics Engine"]:::cloud
+    end
+
+    %% High-level Data Routing
+    LIDAR -->|UDP / Ethernet| RPU
+    CAM -->|MIPI-CSI| RPU
+    RPU -->|Time-Aligned Data Pointers| IPC
+    IPC -->|Hardware Inter-Core Interrupts| APU
+    APU -->|MTU-Optimized gRPC Stream| BACKEND
