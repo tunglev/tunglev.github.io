@@ -19,6 +19,8 @@ Leetcode has been the secret handshake of tech hiring for over a decade. At a co
 
 However, at an early-stage startup, your bottleneck isn't finding someone who can invert a binary tree on a whiteboard in 20 minutes under pressure. Your bottleneck is finding someone who can talk to users, figure out what to build when requirements are ambiguous, ship pragmatic code quickly, and take full ownership of end-to-end features.
 
+<toc-item text="Startup Key Traits" />
+
 ### Key traits startups should screen for instead:
 
 - **Product Sense & Agency** — Ability to scope MVP solutions without over-engineering.
@@ -26,7 +28,7 @@ However, at an early-stage startup, your bottleneck isn't finding someone who ca
 - **Empathy & Communication** — Working directly with users to iterate on real pain points.
 - **System Ownership** — Willingness to debug CI/CD, database schemas, and UI bugs alike.
 
-## Mathematical Modeling of Early Stage Performance
+# Mathematical Modeling of Early Stage Performance
 
 To understand why the traditional screening filters fail early stage teams, we can formalize developer contribution using an **Agency-Utility Model**. 
 
@@ -43,7 +45,7 @@ Furthermore, let us consider the probability distribution of interview performan
 
 $$P(\text{Success} \mid \text{LeetCode}) \ll P(\text{Success} \mid \text{Agency})$$
 
-## Candidate Evaluation and Count Metrics
+# Candidate Evaluation and Count Metrics
 
 Below is a count table compiled from evaluations across 120 early stage hires. It measures candidate profiles, average agency scores, and downstream engineering success rates:
 
@@ -55,7 +57,7 @@ Below is a count table compiled from evaluations across 120 early stage hires. I
 
 *Table 1.1: Downstream performance of candidate archetypes in high-growth startups.*
 
-## Early-Stage Building in Practice
+# Early-Stage Building in Practice
 
 To illustrate what high-velocity, high-agency building looks like in real-world scenarios, observe this demonstration of modern systems design and direct product execution:
 

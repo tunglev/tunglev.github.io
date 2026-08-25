@@ -36,23 +36,43 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
         metadata.thumbnailType.startsWith('data:')))
   );
 
-  // Parse headings (H2 and H3) for the Table of Contents scroll spy
+  // Preprocess content to convert special <toc-item text="..." /> tags to standard headings
+  const processedContent = useMemo(() => {
+    let result = content;
+    
+    // Replace <toc-item text="My Custom Sidebar Item" /> with ## TOC-SPECIAL: My Custom Sidebar Item
+    result = result.replace(
+      /<toc-item\s+text=["']([^"']+)["'](?:\s+id=["']([^"']+)["'])?\s*(?:\/>|><\/toc-item>)/gi,
+      (match, text) => {
+        return `\n\n## TOC-SPECIAL: ${text}\n\n`;
+      }
+    );
+
+    return result;
+  }, [content]);
+
+  // Parse headings (H2 by default, plus special TOC-SPECIAL items) for the Table of Contents scroll spy
   const headings = useMemo(() => {
-    const headingRegex = /^(##|###)\s+(.+)$/gm;
+    const headingRegex = /^##\s+(.+)$/gm;
     const found: { id: string; text: string; level: number }[] = [];
     let match;
     headingRegex.lastIndex = 0;
-    while ((match = headingRegex.exec(content)) !== null) {
-      const level = match[1].length; // 2 for H2, 3 for H3
-      const text = match[2].trim();
+    while ((match = headingRegex.exec(processedContent)) !== null) {
+      let text = match[1].trim();
+      const isSpecial = text.startsWith('TOC-SPECIAL:');
+      
+      if (isSpecial) {
+        text = text.replace('TOC-SPECIAL:', '').trim();
+      }
+      
       const id = text
         .toLowerCase()
         .replace(/[^\w\s-]/g, '')
         .replace(/\s+/g, '-');
-      found.push({ id, text, level });
+      found.push({ id, text, level: 2 });
     }
     return found;
-  }, [content]);
+  }, [processedContent]);
 
   // Scrollspy to highlight active headers on the left
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -199,11 +219,24 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
                 );
               },
               h2: ({ children }) => {
-                const text = getTextFromNode(children);
+                const rawText = getTextFromNode(children);
+                const isSpecial = rawText.startsWith('TOC-SPECIAL:');
+                const text = isSpecial ? rawText.replace('TOC-SPECIAL:', '').trim() : rawText;
+                
                 const id = text
                   .toLowerCase()
                   .replace(/[^\w\s-]/g, '')
                   .replace(/\s+/g, '-');
+
+                if (isSpecial) {
+                  return (
+                    <div id={id} className="scroll-mt-28 my-6 py-3 border-t border-b border-[#e2dfd7]/50 select-none flex items-center gap-2">
+                      <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase bg-[#e2dfd7] text-[#636870] tracking-wider rounded-xs">TOC Tag</span>
+                      <span className="text-[clamp(13px,1.6vw,15px)] font-mono font-bold uppercase tracking-wider text-[#4a4f56]">{text}</span>
+                    </div>
+                  );
+                }
+
                 return (
                   <h2 id={id} className="text-[clamp(18px,2.5vw,24px)] font-bold text-[#282a2d] tracking-tight mt-10 mb-4 scroll-mt-28 pt-2 border-b border-[#e2dfd7] pb-1">
                     {children}
@@ -222,11 +255,33 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
                   </h3>
                 );
               },
-              p: ({ children }) => (
-                <p className="mb-[clamp(14px,2.2vw,22px)] text-[#383b3e] leading-[1.75]">
-                  {children}
-                </p>
-              ),
+              p: ({ children }) => {
+                const childrenArray = React.Children.toArray(children);
+                const hasBlockElement = childrenArray.some((child) => {
+                  if (React.isValidElement(child)) {
+                    const type = child.type;
+                    if (typeof type === 'string') {
+                      return ['div', 'video', 'iframe', 'table', 'blockquote', 'ol', 'ul'].includes(type);
+                    }
+                    return true;
+                  }
+                  return false;
+                });
+
+                if (hasBlockElement) {
+                  return (
+                    <div className="mb-[clamp(14px,2.2vw,22px)] text-[#383b3e] leading-[1.75] font-normal">
+                      {children}
+                    </div>
+                  );
+                }
+
+                return (
+                  <p className="mb-[clamp(14px,2.2vw,22px)] text-[#383b3e] leading-[1.75]">
+                    {children}
+                  </p>
+                );
+              },
               ul: ({ children }) => (
                 <ul className="space-y-[clamp(10px,1.5vw,16px)] font-mono text-[clamp(12px,1.5vw,14px)] text-[#383b3e] my-6">
                   {children}
@@ -440,7 +495,7 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
               },
             }}
           >
-            {content}
+            {processedContent}
           </Markdown>
         </div>
 
