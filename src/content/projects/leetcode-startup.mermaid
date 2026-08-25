@@ -1,0 +1,91 @@
+graph TB
+    %% Styling and color themes
+    classDef sensors fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef rpuDomain fill:#efebe9,stroke:#4e342e,stroke-width:2px;
+    classDef rpuNodes fill:#d7ccc8,stroke:#5d4037,stroke-width:1px;
+    classDef ipcNodes fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
+    classDef apuDomain fill:#ede7f6,stroke:#4a148c,stroke-width:2px;
+    classDef apuCores fill:#d1c4e9,stroke:#5e35b1,stroke-width:1px;
+    classDef serverNodes fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+
+    %% 1. Physical Sensors Subgraph
+    subgraph Sensors [1. Physical Sensors]
+        LIDAR["LiDAR Sensor <br/> (200k+ pts/sec)"]:::sensors
+        CAM["Thermal Camera <br/> (30 FPS)"]:::sensors
+    end
+
+    %% 2. Zynq MPSoC - RPU Subgraph
+    subgraph MPSoC [Zynq UltraScale+ MPSoC Edge Node]
+        
+        SYSCTR(("SYS_CTR <br/> (100 MHz Hardware Timer)")):::ipcNodes
+        
+        subgraph RPU [2. Real-Time Processing Unit: Cortex-R5 - FreeRTOS]
+            ETH_DMA["Ethernet Controller <br/> (DMA Rx)"]:::rpuNodes
+            MIPI_DMA["MIPI-CSI Controller <br/> (DMA Rx)"]:::rpuNodes
+            LIDAR_THREAD["LiDAR Ingest Thread <br/> (Task Notification)"]:::rpuNodes
+            IR_THREAD["IR Ingest Thread <br/> (Task Notification)"]:::rpuNodes
+            TEMP_SYNC["Temporal Sync Thread <br/> (Sliding Window Match)"]:::rpuNodes
+        end
+
+        %% 3. IPC Subgraph
+        subgraph IPC [3. Inter-Processor Communication]
+            VIRTIO["VirtIO Ring Buffers <br/> (Shared OCM Memory)"]:::ipcNodes
+            IPI_HW["Hardware Mailbox <br/> (Inter-Processor Interrupts)"]:::ipcNodes
+        end
+
+        %% 4. Zynq MPSoC - APU Subgraph
+        subgraph APU [4. Application Processing Unit: Cortex-A53 - Linux]
+            
+            subgraph Cores_2_3 [Cores 2 & 3: Isolated Fusion Engine]
+                FUSION_ENG["C++ Spatial Fusion Engine <br/> (ARM NEON SIMD Math)"]:::apuCores
+            end
+            
+            subgraph Core_1 [Core 1: Network Engine]
+                GO_CHAN["Go Channel Buffer <br/> (coordQueue: len/cap check)"]:::apuCores
+                GO_AGENT["Go Edge Agent <br/> (Adaptive Batching: N=45)"]:::apuCores
+            end
+            
+            subgraph Core_0 [Core 0: Host OS]
+                LINUX_OS["Linux Kernel <br/> (rpmsg Driver & TCP Stack)"]:::apuCores
+            end
+        end
+    end
+
+    %% 5. Centralized Backend Subgraph
+    subgraph Server [5. Centralized Cloud Backend]
+        GRPC_RECV["Go gRPC Receiver & <br/> Target Tracking Engine"]:::serverNodes
+        PROM_SERV["Prometheus Server <br/> (Dedicated Monitoring Node)"]:::serverNodes
+    end
+
+    %% Physical Data Streams to DMA
+    LIDAR -->|UDP Packets over Ethernet| ETH_DMA
+    CAM -->|Raw Video over MIPI-CSI| MIPI_DMA
+
+    %% Hardware to RPU Threads
+    ETH_DMA -->|DMA Rx Interrupt| LIDAR_THREAD
+    MIPI_DMA -->|DMA Frame-End Interrupt| IR_THREAD
+
+    %% Unified Hardware Timestamping
+    SYSCTR -.->|Direct Register Read| LIDAR_THREAD
+    SYSCTR -.->|Direct Register Read| IR_THREAD
+
+    %% Ingestion to Temporal Sync
+    LIDAR_THREAD -->|Raw Points + t_L| TEMP_SYNC
+    IR_THREAD -->|Raw Frames + t_T| TEMP_SYNC
+
+    %% RPU to IPC Block
+    TEMP_SYNC -->|Write Synced Data Pointers| VIRTIO
+    TEMP_SYNC -->|Trigger Interrupt| IPI_HW
+
+    %% IPC Block to APU
+    IPI_HW -.->|Physical CPU Interrupt| LINUX_OS
+    LINUX_OS -->|Expose /dev/rpmsg0 Character Device| FUSION_ENG
+    VIRTIO -->|Zero-Copy Pointer Read| FUSION_ENG
+
+    %% APU Spatial Fusion to Go Agent Pipeline
+    FUSION_ENG -->|Local Unix Socket - Fused Target Coords| GO_CHAN
+    GO_CHAN -->|Adaptive Pull - N=1 or N=45| GO_AGENT
+
+    %% Go Agent Network Output
+    GO_AGENT -->|gRPC Bidirectional Stream over TCP/IP| GRPC_RECV
+    PROM_SERV -.->|Scrapes HTTP /metrics Endpoint| GO_AGENT

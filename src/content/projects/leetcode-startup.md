@@ -66,26 +66,7 @@ To illustrate what high-velocity, high-agency building looks like in real-world 
 Here is a system architecture and execution loop showcasing how high-agency early-stage engineering teams operate and deliver high-velocity products (feel free to pan and zoom):
 
 ```mermaid
-graph TD
-    Idea[Raw User Idea / Friction Point] -->|Low Fidelity Spec| Focus[Validate & Design MVP]
-    Focus -->|High Agency Builder| Ship[High Velocity Build & Ship]
-    Ship -->|Continuous Delivery| Live[Live on Production]
-    Live -->|Direct Feedback Loop| Obs[Observe User Interaction]
-    Obs -->|Identify Core Pain Points| Idea
-
-    Live -->|Immediate Signal| Alert{Telemetry / Bug Alert}
-    Alert -->|High Agency Ownership| Fix[Quick Patch & Hotfix]
-    Fix -->|Deploy in Minutes| Live
-
-    classDef default font-family:'JetBrains Mono',monospace,font-size:12px;
-    classDef accent fill:#eaf7ef,stroke:#1DB954,stroke-width:2px,color:#137535;
-    classDef warning fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#854d0e;
-    classDef error fill:#fee2e2,stroke:#ef4444,stroke-width:2px,color:#991b1b;
-    classDef info fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e40af;
-
-    class Focus,Ship,Live accent;
-    class Alert,Fix error;
-    class Obs,Idea info;
+leetcode-startup.mermaid
 ```
 
 By aligning your interview loops around real shipping capabilities instead of puzzles, you build a resilient, multi-disciplinary group capable of weathering early ambiguity.

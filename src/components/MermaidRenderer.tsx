@@ -94,19 +94,18 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
     const svgEl = svgWrapperRef.current.querySelector('svg');
     if (!svgEl) return;
 
-    // Reset styles on SVG to let us calculate dimensions correctly
-    svgEl.setAttribute('width', '100%');
-    svgEl.setAttribute('height', '100%');
-    svgEl.style.maxWidth = 'none';
-
+    let minX = 0;
+    let minY = 0;
     let originalWidth = 600;
     let originalHeight = 400;
 
-    // Get natural dimensions from viewBox
+    // Get natural dimensions and offsets from viewBox
     const viewBox = svgEl.getAttribute('viewBox');
     if (viewBox) {
-      const parts = viewBox.split(/\s+/).map(Number);
-      if (parts.length === 4) {
+      const parts = viewBox.trim().split(/[\s,]+/).map(Number);
+      if (parts.length === 4 && parts.every(num => !isNaN(num))) {
+        minX = parts[0];
+        minY = parts[1];
         originalWidth = parts[2];
         originalHeight = parts[3];
       }
@@ -118,15 +117,27 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
       }
     }
 
+    // Set SVG style width & height explicitly so inline style overrides 100% browser defaults
+    svgEl.setAttribute('width', `${originalWidth}px`);
+    svgEl.setAttribute('height', `${originalHeight}px`);
+    svgEl.style.width = `${originalWidth}px`;
+    svgEl.style.height = `${originalHeight}px`;
+    svgEl.style.maxWidth = 'none';
+    svgEl.style.maxHeight = 'none';
+
+    // Ensure the absolute parent wrapper matches these dimensions so it does not collapse to 0 width/height
+    if (svgWrapperRef.current) {
+      svgWrapperRef.current.style.width = `${originalWidth}px`;
+      svgWrapperRef.current.style.height = `${originalHeight}px`;
+    }
+
     const containerWidth = containerRef.current.clientWidth;
     const containerHeight = containerRef.current.clientHeight || 450;
 
-    // Calculate a fit scale with safe padding (15%)
-    const scaleX = (containerWidth * 0.85) / originalWidth;
-    const scaleY = (containerHeight * 0.85) / originalHeight;
-    const fitScale = Math.min(scaleX, scaleY, 1.2); // Cap at 1.2 to avoid pixelation on small SVGs
+    // Default to exactly 1.5 (150% scaling) centered on the screen as requested
+    const fitScale = 1.5;
 
-    // Center coordinates
+    // Center coordinates: translate relative to the container width/height minus scaled diagram dimension
     const x = (containerWidth - originalWidth * fitScale) / 2;
     const y = (containerHeight - originalHeight * fitScale) / 2;
 
@@ -154,29 +165,46 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
     };
   }, [svg]);
 
-  // Mouse Wheel Zooming (Zoom directly into the cursor coordinates)
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    if (!containerRef.current) return;
+  // Bind passive-false native event listener to block page scrolling entirely during wheel zoom
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
 
-    const zoomFactor = 1.08;
-    const nextScale = e.deltaY < 0 ? scale * zoomFactor : scale / zoomFactor;
-    const boundedScale = Math.max(0.15, Math.min(8, nextScale));
+    const handleNativeWheel = (e: WheelEvent) => {
+      e.preventDefault(); // Block parent page scroll completely
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+      const zoomFactor = 1.08;
+      const deltaY = e.deltaY;
+      const clientX = e.clientX;
+      const clientY = e.clientY;
 
-    const dx = mouseX - position.x;
-    const dy = mouseY - position.y;
-    const ratio = boundedScale / scale;
+      setScale((prevScale) => {
+        const nextScale = deltaY < 0 ? prevScale * zoomFactor : prevScale / zoomFactor;
+        const boundedScale = Math.max(0.15, Math.min(8, nextScale));
 
-    setPosition({
-      x: mouseX - dx * ratio,
-      y: mouseY - dy * ratio,
-    });
-    setScale(boundedScale);
-  };
+        const rect = container.getBoundingClientRect();
+        const mouseX = clientX - rect.left;
+        const mouseY = clientY - rect.top;
+
+        setPosition((prevPosition) => {
+          const dx = mouseX - prevPosition.x;
+          const dy = mouseY - prevPosition.y;
+          const ratio = boundedScale / prevScale;
+          return {
+            x: mouseX - dx * ratio,
+            y: mouseY - dy * ratio,
+          };
+        });
+
+        return boundedScale;
+      });
+    };
+
+    container.addEventListener('wheel', handleNativeWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleNativeWheel);
+    };
+  }, [svg]);
 
   // Click & Drag Panning
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -314,7 +342,6 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
       {/* Main Canvas Area */}
       <div
         ref={containerRef}
-        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUpOrLeave}

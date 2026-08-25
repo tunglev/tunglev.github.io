@@ -3,7 +3,7 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import { ProjectPost, getSnippet, resolveAssetUrl } from '../lib/contentLoader';
+import { ProjectPost, getSnippet, resolveAssetUrl, getMermaidFile } from '../lib/contentLoader';
 import { ThumbnailRenderer } from './ThumbnailRenderer';
 import { PdfEmbed } from './PdfEmbed';
 import { InteractivePdfLink } from './InteractivePdfLink';
@@ -305,10 +305,17 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
               code: ({ className, children, ...props }) => {
                 const match = /language-(\w+)/.exec(className || '');
                 const isMermaid = match && match[1] === 'mermaid';
-                const codeContent = String(children).replace(/\n$/, '');
+                const codeContent = String(children).replace(/\n$/, '').trim();
 
                 if (isMermaid) {
-                  return <MermaidRenderer chart={codeContent} />;
+                  let chartContent = codeContent;
+                  if (codeContent.endsWith('.mermaid') || codeContent.startsWith('file:') || !codeContent.includes('\n')) {
+                    const resolved = getMermaidFile(codeContent);
+                    if (resolved) {
+                      chartContent = resolved;
+                    }
+                  }
+                  return <MermaidRenderer chart={chartContent} />;
                 }
 
                 const isBlock = className || codeContent.includes('\n');

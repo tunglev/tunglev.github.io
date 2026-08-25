@@ -191,6 +191,25 @@ const snippetModules = import.meta.glob('/src/content/snippets/*.md', {
   eager: true,
 }) as Record<string, { default: string } | string>;
 
+// Vite glob import for all mermaid files in the workspace
+const mermaidModules = import.meta.glob('/src/**/*.mermaid', {
+  query: '?raw',
+  eager: true,
+}) as Record<string, { default: string } | string>;
+
+export function getMermaidFile(filePathOrName: string): string | null {
+  const clean = filePathOrName.replace(/^file:\s*/i, '').trim();
+  
+  // Try exact absolute match or relative match in glob keys
+  for (const path in mermaidModules) {
+    if (path === clean || path.endsWith('/' + clean) || path.includes('/' + clean)) {
+      const mod = mermaidModules[path];
+      return typeof mod === 'string' ? mod : mod.default || null;
+    }
+  }
+  return null;
+}
+
 export function getAllProjects(): ProjectPost[] {
   const posts: ProjectPost[] = [];
 
