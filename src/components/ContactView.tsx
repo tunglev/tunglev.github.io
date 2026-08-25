@@ -10,8 +10,8 @@ export function ContactView() {
         Get in touch for engineering inquiries, collaborations, or hardware/software architectural discussions.
       </p>
       <div className="w-full max-w-md py-[clamp(12px,2vw,24px)] rounded-lg font-mono text-[clamp(12px,1.5vw,14px)] text-[#383b3e] space-y-2 text-center">
-        <p><span className="text-[#1DB954] font-bold">[email]</span> contact@example.com</p>
-        <p><span className="text-[#1DB954] font-bold">[location]</span> San Francisco, CA</p>
+        <p><span className="text-[#1DB954] font-bold">[email]</span> tunle0801@gmail.com</p>
+        <p><span className="text-[#1DB954] font-bold">[phone]</span> 413-210-2127</p>
       </div>
     </div>
   );
