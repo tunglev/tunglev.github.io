@@ -162,6 +162,48 @@ export function HomeView() {
               if (isPdf) {
                 return <PdfEmbed src={resolvedSrc} title={alt || ''} />;
               }
+
+              // Video check
+              const isVideo = src && (
+                src.toLowerCase().endsWith('.mp4') ||
+                src.toLowerCase().endsWith('.webm') ||
+                src.toLowerCase().endsWith('.ogg') ||
+                src.toLowerCase().endsWith('.mov') ||
+                src.includes('youtube.com') ||
+                src.includes('youtu.be') ||
+                src.includes('vimeo.com')
+              );
+
+              if (isVideo) {
+                if (src.includes('vimeo.com')) {
+                  const match = src.match(/vimeo\.com\/(\d+)/);
+                  const vimeoId = match ? match[1] : null;
+                  if (vimeoId) {
+                    return (
+                      <div className="aspect-video w-full rounded-lg overflow-hidden border border-[#e2dfd7] my-6 shadow-xs">
+                        <iframe
+                          src={`https://player.vimeo.com/video/${vimeoId}`}
+                          title={alt || "Vimeo video"}
+                          className="w-full h-full border-0"
+                          allow="autoplay; fullscreen; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    );
+                  }
+                }
+
+                return (
+                  <span className="block my-6 rounded-lg overflow-hidden border border-[#e2dfd7] shadow-xs bg-black">
+                    <video
+                      src={resolvedSrc}
+                      controls
+                      className="w-full h-auto max-h-[500px] mx-auto"
+                    />
+                  </span>
+                );
+              }
+
               return (
                 <span className="block w-full my-6 rounded-lg overflow-hidden border border-[#e2dfd7] shadow-xs bg-[#f8f6f0]">
                   <img
@@ -179,6 +221,29 @@ export function HomeView() {
                 const resolvedHref = href ? resolveAssetUrl(href) : '';
                 return <InteractivePdfLink href={resolvedHref}>{children}</InteractivePdfLink>;
               }
+
+              // Video check
+              const isVideo = href && (
+                href.toLowerCase().endsWith('.mp4') ||
+                href.toLowerCase().endsWith('.webm') ||
+                href.toLowerCase().endsWith('.ogg') ||
+                href.toLowerCase().endsWith('.mov') ||
+                href.includes('vimeo.com/')
+              );
+
+              if (isVideo) {
+                const resolvedHref = resolveAssetUrl(href);
+                return (
+                  <span className="block my-6 rounded-lg overflow-hidden border border-[#e2dfd7] shadow-xs bg-black">
+                    <video
+                      src={resolvedHref}
+                      controls
+                      className="w-full h-auto max-h-[500px] mx-auto"
+                    />
+                  </span>
+                );
+              }
+
               return (
                 <a
                   href={href}
