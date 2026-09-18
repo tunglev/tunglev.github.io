@@ -44,12 +44,11 @@ export default function App() {
       if (key === 'h') navigateTab('home');
       if (key === 'p') navigateTab('project');
       if (key === 'e') navigateTab('experience');
-      if (key === 'c') navigateTab('contact');
+      if (key === 'i') navigateTab('contact');
 
       // Social shortcuts
-      if (key === 'x') window.open('https://x.com', '_blank');
-      if (key === 'l') window.open('https://linkedin.com', '_blank');
-      if (key === 'g') window.open('https://github.com', '_blank');
+      if (key === 'l') window.open('https://www.linkedin.com/in/tungvle', '_blank');
+      if (key === 'g') window.open('https://github.com/tunglev', '_blank');
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -61,7 +60,7 @@ export default function App() {
     { id: 'home', label: 'HOME', key: 'h' },
     { id: 'experience', label: 'EXPERIENCE', key: 'e' },
     { id: 'project', label: 'PROJECTS', key: 'p' },
-    { id: 'contact', label: 'CONTACT', key: 'c' },
+    { id: 'contact', label: 'CONTACT', key: 'i' },
   ];
 
   const viewKey = `${activeTab}-${selectedProjectId || 'main'}`;
