@@ -18,6 +18,8 @@ order: 1
 ## Abstract
 This is the most detailed paper I have on what I went through, my decisions, thought process on the engineering design, trade-offs, and performance optimization of a high-throughput drone tracking system deployed at the edge. The system ingests and fuses high-frequency 3D LiDAR point clouds (200,000+ points/sec) and 2D thermal camera frames (30 FPS) on an AMD/Xilinx Zynq UltraScale+ MPSoC. By partitioning processing domains between a hard real-time Cortex-R5 core running FreeRTOS and isolated Cortex-A53 application cores running Linux, the architecture successfully decouples sub-millisecond sensor ingestion from heavy network streaming layers. Additionally, this reading presents the mathematical derivation and implementation of a network-level adaptive batching algorithm that utilizes inter-processor communication (IPC) and Go channels to systematically reduce P99 latency from 200 ms to 100 ms under dense target environments.
 
+![System infrastructure overview](/SOC.pdf)
+
 ---
 
 ## 1. The Problem
