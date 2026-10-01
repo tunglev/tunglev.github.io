@@ -25,9 +25,9 @@ export function parsePath(pathname: string): RouteState {
     return { tab: 'home', projectId: null };
   }
 
-  if (cleanPath === '/experience') {
-    return { tab: 'experience', projectId: null };
-  }
+  // if (cleanPath === '/experience') {
+  //   return { tab: 'experience', projectId: null };
+  // }
 
   if (cleanPath === '/contact') {
     return { tab: 'contact', projectId: null };
@@ -52,7 +52,7 @@ export function parsePath(pathname: string): RouteState {
  */
 export function getPathForRoute(tab: TabId, projectId?: string | null): string {
   if (tab === 'home') return '/home';
-  if (tab === 'experience') return '/experience';
+  //if (tab === 'experience') return '/experience';
   if (tab === 'contact') return '/contact';
   if (tab === 'project') {
     if (projectId) {
