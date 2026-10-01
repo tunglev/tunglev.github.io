@@ -58,7 +58,6 @@ export default function App() {
 
   const navItems: NavItem[] = [
     { id: 'home', label: 'HOME', key: 'h' },
-    { id: 'experience', label: 'EXPERIENCE', key: 'e' },
     { id: 'project', label: 'PROJECTS', key: 'p' },
     { id: 'contact', label: 'CONTACT', key: 'i' },
   ];
