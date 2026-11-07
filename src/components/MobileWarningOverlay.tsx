@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Monitor, AlertTriangle } from 'lucide-react';
 
 export function MobileWarningOverlay() {
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  if (isDismissed) return null;
+
   return (
     <div
       id="mobile-desktop-warning-overlay"
@@ -28,6 +32,13 @@ export function MobileWarningOverlay() {
           <p className="text-xs text-neutral-400 font-mono">
             Please visit on a desktop or laptop browser.
           </p>
+          <button
+            type="button"
+            onClick={() => setIsDismissed(true)}
+            className="mt-5 w-full cursor-pointer rounded-lg border border-[#1DB954]/50 bg-[#1DB954]/15 px-4 py-3 text-sm font-mono text-[#a0efba] transition-colors hover:bg-[#1DB954]/25 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1DB954]"
+          >
+            Continue on this device
+          </button>
         </div>
       </div>
     </div>

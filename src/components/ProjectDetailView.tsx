@@ -8,6 +8,8 @@ import { ThumbnailRenderer } from './ThumbnailRenderer';
 import { PdfEmbed } from './PdfEmbed';
 import { InteractivePdfLink } from './InteractivePdfLink';
 import { MermaidRenderer } from './MermaidRenderer';
+import { ProjectDemoReel } from './ProjectDemoReel';
+import { SonificationExplainer } from './SonificationExplainer';
 
 interface ProjectDetailViewProps {
   post: ProjectPost;
@@ -27,6 +29,7 @@ function getTextFromNode(node: any): string {
 export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
   const { metadata, content } = post;
   const footerSnippet = getSnippet('footer-note.md');
+  const hasDemos = !!metadata.demos?.length;
 
   const hasImage = !!(
     metadata.thumbnailImage ||
@@ -115,10 +118,10 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
   }, [headings]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-8 items-start">
+    <div className={`w-full max-w-5xl mx-auto px-4 ${hasDemos ? 'py-2' : 'py-6'} flex flex-col lg:flex-row gap-8 items-start`}>
       
       {/* Sidebar Sticky Column on Left (visible on lg screens and up) */}
-      {headings.length > 0 && (
+      {headings.length > 0 && !hasDemos && (
         <aside className="hidden lg:block w-60 shrink-0 sticky top-28 self-start bg-[#fbf9f5]/90 backdrop-blur-xs p-5 rounded-2xl border border-[#e5e2da] shadow-xs select-none max-h-[calc(100vh-8rem)] overflow-y-auto no-scrollbar">
           <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#636870] mb-3">
             On This Page
@@ -178,32 +181,56 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
           <span>{metadata.readTime}</span>
         </div>
 
+        {hasDemos && (
+          <>
+            <p className="mb-6 text-[clamp(14px,1.8vw,17px)] leading-relaxed text-[#505a52]">{metadata.description}</p>
+            <ProjectDemoReel key={metadata.id} demos={metadata.demos!} />
+            <nav aria-label="On this page" className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 border-y border-[#e2dfd7] py-4 font-mono text-[11px] text-[#636870]">
+              {headings.map((heading) => (
+                <a
+                  key={heading.id}
+                  href={`#${heading.id}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    document.getElementById(heading.id)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+                  }}
+                  className="hover:text-[#137535] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#137535]"
+                >
+                  {heading.text}
+                </a>
+              ))}
+            </nav>
+          </>
+        )}
+
         {/* Image Card / Banner in Article */}
-        <div className="w-full mb-[clamp(20px,3.5vw,36px)] rounded-[clamp(12px,2vw,18px)] overflow-hidden border border-[#e2dfd7] bg-[#f5f2ea] shadow-xs flex flex-col items-center">
-          <div
-            className={`w-full flex items-center justify-center relative overflow-hidden ${
-              hasImage ? 'p-0 h-auto' : 'h-[clamp(140px,28vw,260px)] p-6'
-            }`}
-            style={hasImage ? undefined : { backgroundColor: metadata.thumbnailBg }}
-          >
-            <div className={`w-full flex items-center justify-center ${
-              hasImage ? '' : 'w-full h-full transform scale-110 transition-transform hover:scale-115'
-            }`}>
-              <ThumbnailRenderer
-                type={metadata.thumbnailType}
-                image={metadata.thumbnailImage}
-                className={hasImage ? 'w-full h-auto block' : undefined}
-              />
+        {!hasDemos && (
+          <div className="w-full mb-[clamp(20px,3.5vw,36px)] rounded-[clamp(12px,2vw,18px)] overflow-hidden border border-[#e2dfd7] bg-[#f5f2ea] shadow-xs flex flex-col items-center">
+            <div
+              className={`w-full flex items-center justify-center relative overflow-hidden ${
+                hasImage ? 'p-0 h-auto' : 'h-[clamp(140px,28vw,260px)] p-6'
+              }`}
+              style={hasImage ? undefined : { backgroundColor: metadata.thumbnailBg }}
+            >
+              <div className={`w-full flex items-center justify-center ${
+                hasImage ? '' : 'w-full h-full transform scale-110 transition-transform hover:scale-115'
+              }`}>
+                <ThumbnailRenderer
+                  type={metadata.thumbnailType}
+                  image={metadata.thumbnailImage}
+                  className={hasImage ? 'w-full h-auto block' : undefined}
+                />
+              </div>
             </div>
+            {metadata.imageCaption && (
+              <div className="w-full py-2.5 px-4 bg-[#f4f1e8] border-t border-[#e2dfd7] text-center">
+                <span className="text-[clamp(11px,1.4vw,13px)] font-mono text-[#636870]">
+                  {metadata.imageCaption}
+                </span>
+              </div>
+            )}
           </div>
-          {metadata.imageCaption && (
-            <div className="w-full py-2.5 px-4 bg-[#f4f1e8] border-t border-[#e2dfd7] text-center">
-              <span className="text-[clamp(11px,1.4vw,13px)] font-mono text-[#636870]">
-                {metadata.imageCaption}
-              </span>
-            </div>
-          )}
-        </div>
+        )}
 
         {/* Article Body - Rendered from Markdown Content File */}
         <div className="markdown-body text-[clamp(14px,1.8vw,17px)] text-[#383b3e] leading-[1.75] font-normal mb-[clamp(24px,3.5vw,40px)]">
@@ -211,6 +238,13 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeKatex]}
             components={{
+              pre: ({ children }) => {
+                const code = React.Children.toArray(children)[0];
+                if (React.isValidElement<{ className?: string }>(code) && code.props.className === 'language-sonification') {
+                  return <>{children}</>;
+                }
+                return <pre>{children}</pre>;
+              },
               h1: ({ children }) => {
                 const text = getTextFromNode(children);
                 const id = text
@@ -310,6 +344,10 @@ export function ProjectDetailView({ post, onBack }: ProjectDetailViewProps) {
                 const match = /language-(\w+)/.exec(className || '');
                 const isMermaid = match && match[1] === 'mermaid';
                 const codeContent = String(children).replace(/\n$/, '').trim();
+
+                if (match?.[1] === 'sonification') {
+                  return <SonificationExplainer />;
+                }
 
                 if (isMermaid) {
                   let chartContent = codeContent;

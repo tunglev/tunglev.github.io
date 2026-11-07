@@ -10,6 +10,14 @@ export interface ProjectFrontmatter {
   thumbnailImage?: string;
   imageCaption: string;
   order?: number;
+  demos?: ProjectDemo[];
+}
+
+export interface ProjectDemo {
+  src: string;
+  poster?: string;
+  title: string;
+  caption: string;
 }
 
 export interface ProjectPost {
@@ -247,6 +255,14 @@ export function getAllProjects(): ProjectPost[] {
           thumbnailImage: resolvedImage,
           imageCaption: metadata.imageCaption || '',
           order: typeof metadata.order === 'number' ? metadata.order : 99,
+          demos: Array.isArray(metadata.demoVideos)
+            ? metadata.demoVideos.map((src: string, index: number) => ({
+                src: resolveAssetUrl(src),
+                poster: resolveAssetUrl(metadata.demoPosters?.[index]),
+                title: metadata.demoTitles?.[index] || `Demo ${index + 1}`,
+                caption: metadata.demoCaptions?.[index] || '',
+              }))
+            : undefined,
         },
         content: content.trim(),
       });

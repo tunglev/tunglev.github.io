@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Hear the room: spatial sonification</title>
+  <desc id="description">Conceptual room plan with a central listener, expanding sound waves, and spatial audio emitters attached to surrounding objects.</desc>
+  <defs>
+    <radialGradient id="ambient" cx="0" cy="0" r="1" gradientTransform="translate(600 470) rotate(90) scale(470 620)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#173C2B"/>
+      <stop offset="1" stop-color="#0D1915"/>
+    </radialGradient>
+    <radialGradient id="pulse-fill" cx="0" cy="0" r="1" gradientTransform="translate(600 466) rotate(90) scale(213)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1DB954" stop-opacity=".13"/>
+      <stop offset=".8" stop-color="#1DB954" stop-opacity=".015"/>
+      <stop offset="1" stop-color="#1DB954" stop-opacity=".07"/>
+    </radialGradient>
+    <linearGradient id="wall" x1="347" y1="251" x2="853" y2="671" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EAE7DB" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#EAE7DB" stop-opacity=".25"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" stroke="#B8D0BE" stroke-opacity=".055"/>
+    </pattern>
+    <filter id="glow" x="-150%" y="-150%" width="400%" height="400%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+  </defs>
+
+  <path fill="url(#ambient)" d="M0 0h1200v800H0z"/>
+  <path fill="url(#grid)" d="M0 0h1200v800H0z"/>
+  <path d="M58 65H172M58 65v58M1142 65h-114M1142 65v58M58 735h114M58 735v-58M1142 735h-114M1142 735v-58" stroke="#C8D7C9" stroke-opacity=".2"/>
+
+  <g font-family="'JetBrains Mono', 'Courier New', monospace" text-anchor="middle">
+    <text x="600" y="93" fill="#73D793" font-size="15" font-weight="700" letter-spacing="5">SPATIAL SONIFICATION</text>
+    <text x="600" y="166" fill="#F7F3E9" font-family="Arial, Helvetica, sans-serif" font-size="66" font-weight="800" letter-spacing="-2">HEAR THE ROOM.</text>
+    <text x="600" y="204" fill="#A6B9AC" font-size="15" letter-spacing="1">3D surroundings. An auditory perspective.</text>
+  </g>
+
+  <!-- A plan-view room: deliberately conceptual, not a measured floor plan. -->
+  <path d="M341 277h518v378H690M341 277v378h177" stroke="#000" stroke-opacity=".2" stroke-width="24"/>
+  <path d="M341 270h518v378H690M341 270v378h177" stroke="url(#wall)" stroke-width="5" stroke-linecap="square"/>
+  <path d="M518 648v-66a66 66 0 0 1 66 66" stroke="#A6B9AC" stroke-opacity=".3" stroke-width="1.5"/>
+  <path d="M518 648h66" stroke="#A6B9AC" stroke-opacity=".55" stroke-width="2"/>
+
+  <!-- Room objects remain readable in a centered square thumbnail. -->
+  <rect x="366" y="295" width="140" height="61" rx="8" fill="#263C30" stroke="#748E7B" stroke-opacity=".45"/>
+  <path d="M382 309h108M382 342h108" stroke="#748E7B" stroke-opacity=".3"/>
+  <rect x="788" y="385" width="46" height="161" rx="8" fill="#263C30" stroke="#748E7B" stroke-opacity=".45"/>
+  <path d="M802 401v129M820 401v129" stroke="#748E7B" stroke-opacity=".3"/>
+  <rect x="381" y="542" width="76" height="76" rx="10" fill="#263C30" stroke="#748E7B" stroke-opacity=".45"/>
+  <path d="M398 559h42v42h-42z" stroke="#748E7B" stroke-opacity=".3"/>
+  <circle cx="782" cy="321" r="22" fill="#263C30" stroke="#748E7B" stroke-opacity=".45"/>
+  <path d="m773 326 9-18 9 18M782 308v28" stroke="#748E7B" stroke-opacity=".45"/>
+
+  <circle cx="600" cy="466" r="213" fill="url(#pulse-fill)"/>
+  <g stroke="#1DB954">
+    <circle cx="600" cy="466" r="74" stroke-opacity=".6" stroke-width="1.5"/>
+    <circle cx="600" cy="466" r="123" stroke-opacity=".4"/>
+    <circle cx="600" cy="466" r="170" stroke-opacity=".24"/>
+    <circle cx="600" cy="466" r="213" stroke-opacity=".17"/>
+    <path d="M600 466 452 356M600 466l188-1M600 466 457 565" stroke-opacity=".65" stroke-dasharray="4 7"/>
+  </g>
+  <path d="m600 466-65-106a124 124 0 0 1 130 0Z" fill="#1DB954" fill-opacity=".055"/>
+  <path d="m592 380 8-10 8 10" stroke="#73D793" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Obstacle emitters and their local sound fields. -->
+  <g fill="#1DB954" filter="url(#glow)" opacity=".6">
+    <circle cx="452" cy="356" r="11"/>
+    <circle cx="788" cy="465" r="11"/>
+    <circle cx="457" cy="565" r="11"/>
+  </g>
+  <g stroke="#52D77C" stroke-width="1.5">
+    <circle cx="452" cy="356" r="9" fill="#1DB954"/>
+    <circle cx="788" cy="465" r="9" fill="#1DB954"/>
+    <circle cx="457" cy="565" r="9" fill="#1DB954"/>
+    <circle cx="452" cy="356" r="19" stroke-opacity=".45"/>
+    <circle cx="788" cy="465" r="19" stroke-opacity=".45"/>
+    <circle cx="457" cy="565" r="19" stroke-opacity=".45"/>
+    <path d="M446 354a6 6 0 0 1 7-4M782 463a6 6 0 0 1 7-4M451 563a6 6 0 0 1 7-4" stroke="#C8F5D4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Listener/headset icon. -->
+  <circle cx="600" cy="466" r="43" fill="#102B1D" stroke="#1DB954" stroke-opacity=".35"/>
+  <circle cx="600" cy="466" r="35" fill="#203F2D" stroke="#73D793" stroke-opacity=".35"/>
+  <path d="M580 469v-9a20 20 0 0 1 40 0v9" stroke="#F7F3E9" stroke-width="4" stroke-linecap="round"/>
+  <rect x="575" y="461" width="10" height="21" rx="4" fill="#1DB954" stroke="#B7EFC7" stroke-width="1.5"/>
+  <rect x="615" y="461" width="10" height="21" rx="4" fill="#1DB954" stroke="#B7EFC7" stroke-width="1.5"/>
+  <path d="M590 480a14 14 0 0 0 20 0" stroke="#91A998" stroke-width="2" stroke-linecap="round"/>
+
+  <g font-family="'JetBrains Mono', 'Courier New', monospace" font-size="11" font-weight="700" letter-spacing="1.5">
+    <text x="600" y="529" text-anchor="middle" fill="#D2E2D5">LISTENER</text>
+    <text x="420" y="389" text-anchor="end" fill="#73D793">EMITTER</text>
+  </g>
+  <path d="M391 712h418" stroke="#BCD0C2" stroke-opacity=".16"/>
+  <g font-family="'JetBrains Mono', 'Courier New', monospace" font-size="12" letter-spacing="1.4" fill="#B2C5B8">
+    <circle cx="413" cy="744" r="4" fill="#1DB954"/>
+    <text x="430" y="748">DIRECTION</text>
+    <circle cx="578" cy="744" r="4" fill="#1DB954"/>
+    <text x="595" y="748">DISTANCE</text>
+    <circle cx="733" cy="744" r="4" fill="#1DB954"/>
+    <text x="750" y="748">SPACE</text>
+  </g>
+</svg>
