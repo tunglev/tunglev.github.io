@@ -2,8 +2,8 @@ import React from 'react';
 
 export function Footer() {
   const socialLinks = [
-    { key: 'l', label: 'linkedIn', url: 'https://linkedin.com' },
-    { key: 'g', label: 'github', url: 'https://github.com' },
+    { key: 'l', label: 'linkedIn', url: 'https://www.linkedin.com/in/tungvle' },
+    { key: 'g', label: 'github', url: 'https://github.com/tunglev' },
   ];
 
   return (
