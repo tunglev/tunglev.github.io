@@ -14,7 +14,7 @@ The project is published from `src/content/projects/vr-spatial-sonification.md` 
 1. **At the top: a 15–25 second narrated demo.** Show the person wearing Quest and wired headphones, then cut to the virtual room. Use short captions: “Scan,” “Listen,” and “Find the obstacle.” Keep the stereo spatial audio intact. Replace the first reel entry after recording; the current clip is a working prototype capture.
 2. **After “Two scales of awareness”: a matched comparison.** Record the same virtual room with the growing-sphere and local virtual-cane encodings. Use identical geometry and camera position so readers can compare the sound strategies without learning a new scene each time.
 3. **After “Geometry that adapts to the play area”: a room-layout contact sheet.** Capture four to six actual room presets with the same overhead camera. Mark the listener start and target. This would demonstrate the environment variation more directly than another abstract diagram.
-4. **After “A repeatable pretest workflow”: a clean headset UI screenshot.** Show the round-count configuration and an anonymized example CSV schema. Remove participant identifiers before adding any real session data.
+4. **After “Deployment and experiment data capture”: a clean headset UI screenshot.** Show the round-count configuration and an anonymized example CSV schema. Remove participant identifiers before adding any real session data.
 5. **In “What early testing taught us”: add a measured results chart only when data are available.** Use angular error by horizontal/vertical condition, with participant count, units, uncertainty, and methodology. The supplied notes do not include enough evidence for a reliable quantitative chart.
 
 ## Content to verify before adding stronger claims

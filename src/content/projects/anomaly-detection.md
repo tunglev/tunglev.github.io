@@ -8,7 +8,7 @@ tags: ["multimodal data", "machine learning", "clustering",  "agentic AI"]
 thumbnailBg: "#1a1a2e"
 thumbnailType: "microsoft.png"
 imageCaption: "C chunking pipeline"
-order: 2
+order: 3
 ---
 
 # Automating Diagnostics and Explainability in Azure Networking

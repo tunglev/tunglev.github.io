@@ -8,7 +8,7 @@ tags: ["RTOS", "embedded system", "firmware", "SoC", "algorithm"]
 thumbnailBg: "#1a1a2e"
 thumbnailType: "./images/thumbnail.png"
 imageCaption: "Real-Time Edge Sensor Fusion and Ingestion Pipeline "
-order: 1
+order: 0
 ---
 
 
